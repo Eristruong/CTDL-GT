@@ -1,0 +1,142 @@
+#include<iostream>
+#include<stack>
+using namespace std;
+bool isOperator(char x)
+{
+ return x == '+' || x == '-' || x == '*' || x == '/';
+}
+int getPriority(char x)
+{
+ if (x == '+' || x == '-') return 1;
+ if (x == '*' || x == '/') return 2;
+ return 0;
+}
+bool isOperand(char x)
+{
+ if ((x > 64 && x<91) || (x>96 && x < 123)) return true;
+ return false;
+}
+string toPostfix(string &A)
+{
+ stack<char> opStack;       
+ string result = "";       
+ for (int i = 0; i < A.size(); i++)
+ {
+  if (A[i]=='(')    
+  {
+   opStack.push(A[i]);
+  }
+  else
+  {
+   if (isOperand(A[i]))   
+   {
+    result += A[i];
+   }
+   else
+   {
+    if (isOperator(A[i]))  
+    {
+     while (!opStack.empty() && getPriority(opStack.top()) >= getPriority(A[i]))
+     {
+      result += opStack.top();
+      opStack.pop();
+     }
+     opStack.push(A[i]);
+    }
+    else
+    {
+     if (A[i] == ')')
+     {
+      while (!opStack.empty() && opStack.top() != '(')
+      {
+       result += opStack.top();
+       opStack.pop();
+      }
+      opStack.pop();
+     }
+    }
+   }
+  }
+ }
+ while (!opStack.empty())  
+ {
+  result += opStack.top();
+  opStack.pop();
+ }
+ return result; 
+}
+
+struct Node
+{
+ char data;
+ Node*Left;
+ Node*Right;
+ Node()
+ {
+  this->Left = this->Right = NULL;
+ }
+};
+struct ExpressionTree
+{
+ Node* Root;        
+ ExpressionTree()
+ {
+  this->Root = NULL;
+ }
+};
+
+void showPostfix(Node*&R)
+{
+ if (R)
+ {
+  showPostfix(R->Left);
+  showPostfix(R->Right);
+  cout << R->data;
+ }
+}
+
+void addToExpression(Node*&R, string str)
+{
+ str = toPostfix(str);
+ stack<Node*> stackNode;
+ for (int i = 0; i < str.size(); i++)
+ {
+  if (isOperand(str[i]))
+  {
+   Node*P = new Node;
+   P->data = str[i];
+   stackNode.push(P);
+  }
+  else
+  {
+   if (isOperator(str[i]))
+   {
+    Node*P = new Node;
+    P->data = str[i];
+    P->Right = stackNode.top();
+    stackNode.pop();
+    P->Left = stackNode.top();
+    stackNode.pop();
+    stackNode.push(P);
+   }
+  }
+ }
+ R = stackNode.top();
+}
+int main()
+{
+ ExpressionTree ET;
+ string str;
+ cout << "enter infix notation, enter '#' to exit:\n";
+ char a = 'h';
+ while (a != '#') 
+ {
+  cin >> a;
+  if (a != '#') str += a;
+ }
+ addToExpression(ET.Root, str);
+ cout << "\ntransform infix notation to postfix notation: \n";
+ showPostfix(ET.Root);
+
+ return 0;
+}
